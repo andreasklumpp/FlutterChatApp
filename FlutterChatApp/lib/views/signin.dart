@@ -1,13 +1,48 @@
 import 'package:FlutterChatApp/helper/theme.dart';
+import 'package:FlutterChatApp/services/auth.dart';
+import 'package:FlutterChatApp/views/chatroomscreen.dart';
 import 'package:FlutterChatApp/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
 class SignIn extends StatefulWidget {
+  final Function toggle;
+
+  SignIn(this.toggle);
+
   @override
   _SignInState createState() => _SignInState();
 }
 
 class _SignInState extends State<SignIn> {
+  TextEditingController emailEditingController = new TextEditingController();
+  TextEditingController passwordEditingController = new TextEditingController();
+
+  final formKey = GlobalKey<FormState>();
+
+  bool isLoading = false;
+
+  AuthService authService = new AuthService();
+
+  signIn() async {
+    if (formKey.currentState.validate()) {
+      setState(() {
+        isLoading = true;
+      });
+
+//TODO Sign In instead of sign up
+      await authService
+          .signUpWithEmailAndPassword(
+              emailEditingController.text, passwordEditingController.text)
+          .then((result) {
+        print(result);
+        if (result != null) {
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => ChatRoom()));
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,6 +58,13 @@ class _SignInState extends State<SignIn> {
                   TextFormField(
                     style: simpleTextStyle(),
                     decoration: textFieldInputDecoration("email"),
+                    validator: (val) {
+                      return RegExp(
+                                  r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                              .hasMatch(val)
+                          ? null
+                          : "Enter correct email";
+                    },
                   ),
                   TextFormField(
                     obscureText: true,
@@ -56,7 +98,7 @@ class _SignInState extends State<SignIn> {
             ),
             GestureDetector(
               onTap: () {
-//TODO
+                signIn();
               },
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 16),
@@ -100,12 +142,20 @@ class _SignInState extends State<SignIn> {
                   "Don't have account? ",
                   style: simpleTextStyle(),
                 ),
-                Text(
-                  "Register now",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      decoration: TextDecoration.underline),
+                GestureDetector(
+                  onTap: () {
+                    this.widget.toggle();
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      "Register now",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          decoration: TextDecoration.underline),
+                    ),
+                  ),
                 ),
               ],
             ),
