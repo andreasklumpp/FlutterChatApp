@@ -1,3 +1,4 @@
+import 'package:FlutterChatApp/helper/helper_function.dart';
 import 'package:FlutterChatApp/helper/theme.dart';
 import 'package:FlutterChatApp/services/auth.dart';
 import 'package:FlutterChatApp/services/database.dart';
@@ -31,6 +32,10 @@ class _SignUpState extends State<SignUp> {
       setState(() {
         isLoading = true;
       });
+
+      HelperFunctions.saveUserLoggedInSharedPreference(true);
+      HelperFunctions.saveUserNameSharedPreference(usernameEditingController.text);
+      HelperFunctions.saveUserEmailSharedPreference(emailEditingController.text);
 
       await authService
           .signUpWithEmailAndPassword(
