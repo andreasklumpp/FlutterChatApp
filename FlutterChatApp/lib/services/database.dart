@@ -28,4 +28,33 @@ class DatabaseService {
       print(e.toString());
     });
   }
+
+  getChatRooms(String username) async {
+    return await Firestore.instance
+        .collection("ChatRoom")
+        .where("users", arrayContains: username)
+        .snapshots();
+  }
+
+  saveConversationMessages(String chatRoomId, messageMap) async {
+    Firestore.instance
+        .collection("ChatRoom")
+        .document(chatRoomId)
+        .collection("chats")
+        .add(messageMap)
+        .catchError(
+      (e) {
+        print(e.toString());
+      },
+    );
+  }
+
+  getConversationMessages(String chatRoomId) async {
+    return await Firestore.instance
+        .collection("ChatRoom")
+        .document(chatRoomId)
+        .collection("chats")
+        .orderBy("time", descending: false)
+        .snapshots();
+  }
 }

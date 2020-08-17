@@ -1,4 +1,6 @@
+import 'package:FlutterChatApp/helper/constants.dart';
 import 'package:FlutterChatApp/services/database.dart';
+import 'package:FlutterChatApp/views/conversation.dart';
 import 'package:FlutterChatApp/widgets/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -24,13 +26,6 @@ class _SearchState extends State<Search> {
       });
       print(results);
     });
-  }
-
-  createChatroomAndStartConversation(String username){
-    List<String> users = [username, ];
-
-    //databaseService.createChatRoom(chatRoomId, chatRoomMap)
-
   }
 
   Widget searchList() {
@@ -111,6 +106,27 @@ class SearchItemTile extends StatelessWidget {
 
   SearchItemTile({this.username, this.email});
 
+  createChatroomAndStartConversation({BuildContext context, String username}) {
+    if (this.username != Constants.myUsername) {
+      String chatRoomId = getChatRoomId(username, Constants.myUsername);
+      List<String> users = [username, Constants.myUsername];
+      Map<String, dynamic> chatRoomMap = {
+        "users": users,
+        "chatroomId": chatRoomId,
+      };
+      DatabaseService().createChatRoom(chatRoomId, chatRoomMap);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Conversation(chatRoomId),
+        ),
+      );
+    } else {
+      print("Cannot send message to yourself");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -133,7 +149,8 @@ class SearchItemTile extends StatelessWidget {
           Spacer(),
           GestureDetector(
             onTap: () {
-
+              createChatroomAndStartConversation(
+                  context: context, username: this.username);
             },
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -147,5 +164,13 @@ class SearchItemTile extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+getChatRoomId(String a, String b) {
+  if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
+    return "$b\_$a";
+  } else {
+    return "$a\_$b";
   }
 }
